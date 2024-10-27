@@ -1,0 +1,63 @@
+volumes:
+  db1:
+
+services:
+  
+  wordpress:
+    image: wordpress:6.1.1-php7.4-apache
+    restart: always
+    container_name: wordpress
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      WORDPRESS_DB_HOST: ${MYSQL_HOST}
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DB_NAME}
+    depends_on:
+      - mysqldb
+    networks:
+      - traefik
+    volumes:
+        # mount wordpress folder out
+      - ./wordpress:/var/www/html
+    ports:
+      - 8080:80
+   
+  mysqldb:
+    # this is the database used by Wordpress
+    image: mysql:8.0
+    restart: always
+    container_name: mysql
+    logging:
+      # Configure the logs retention according to your needs
+      options:
+        max-size: "10m"
+        max-file: "3"
+    env_file:
+      - ./.env
+    environment:
+      # Connect WordPress to the database
+      MYSQL_DATABASE: ${MYSQL_DB_NAME}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      # Here, the database files are linked into a directory for direct access
+      # You probably prefer to use a docker volume instead
+      - db1:/var/lib/mysql
+    networks:
+      - traefik
+
+networks:
+  traefik:
+
+
+
+
+
+
+
+
